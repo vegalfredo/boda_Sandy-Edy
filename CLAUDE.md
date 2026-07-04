@@ -4,6 +4,26 @@
 
 ---
 
+## 0. Estado actual (lo que YA está construido)
+
+> Esta sección refleja lo implementado. Las secciones 1–9 son la especificación
+> de diseño original y siguen siendo la referencia de estilo.
+
+- **Novios:** Sandy & Edy — **sábado 15 de agosto de 2026, 18:00**, Quinta Santiago, Humilpan, Querétaro.
+- **Stack elegido:** **Astro + Tailwind** (estático). Dependencias: `astro`, `@astrojs/tailwind`, `tailwindcss`, `canvas-confetti`, `swiper`. Nada más — al añadir features, **no instalar tecnologías nuevas** sin pedirlo.
+- **Repositorio:** `github.com/vegalfredo/boda_Sandy-Edy` (rama `main`). Deploy automático con `.github/workflows/deploy.yml` (Source = GitHub Actions en Settings → Pages).
+- **URL publicada:** `https://vegalfredo.github.io/boda_Sandy-Edy/`. En `astro.config.mjs`: `base: "/boda_Sandy-Edy"`, `site: "https://vegalfredo.github.io"`. Si cambia el nombre del repo, actualizar `NOMBRE_REPO` ahí.
+- **Fuente única de datos:** `src/config/invitacion.ts` (regla de oro — todo lo editable vive ahí, incluidas leyendas del carrusel en `fotos[].pie`).
+- **Assets:** originales en `img/*.jpeg` y `Para Siempre.mp3` (raíz). Optimizados en `public/fotos/*.webp` (ffmpeg, q82, máx 1600px) y `public/audio/cancion.mp3`. **No hay ImageMagick/cwebp: usar ffmpeg** para convertir imágenes. Open Graph = `public/og-image.jpg` (foto de la pareja, 1200×630).
+- **Secciones implementadas:** Hero (nombres con trazo animado + Ken Burns + monograma anclado), Cuenta regresiva, Carrusel, Padres/Recepción, Ubicación, Vestimenta, Regalos, RSVP, Cierre, Footer, música opt-in y nav hamburguesa.
+- **Decisiones del usuario ya tomadas:**
+  - **Confeti** en la cuenta regresiva se dispara **cada vez que se hace scroll a esa sección** (se re-arma al salir del viewport), no solo al llegar a cero. Colores de la paleta.
+  - **Carrusel** = **álbum tipo baraja de cartas** (Swiper `EffectCards`) con marco Polaroid y leyenda manuscrita por foto. El coverflow clásico fue descartado por "genérico".
+  - **Miniatura de WhatsApp (OG)** = la foto de la pareja (no un ramo). Es lo más personal.
+- **Verificación visual:** con `playwright-core` + Chrome local headless. El script `.mjs` debe correr **desde la raíz del proyecto** (para resolver `node_modules`) y la ruta de Chrome lleva backslashes dobles.
+
+---
+
 ## 1. Contexto del proyecto
 
 - **Tipo:** Invitación de boda digital de una sola página (one-page, scroll vertical narrativo).
