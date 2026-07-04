@@ -1,0 +1,22 @@
+{
+  "name": "invitacion-sandy-edy",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.16.18",
+    "canvas-confetti": "^1.9.3",
+    "swiper": "^11.1.15"
+  },
+  "devDependencies": {
+    "@astrojs/tailwind": "^5.1.4",
+    "tailwindcss": "^3.4.17"
+  }
+}

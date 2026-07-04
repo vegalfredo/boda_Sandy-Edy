@@ -1,0 +1,235 @@
+---
+import { invitacion } from "../config/invitacion";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const asset = (p: string) => `${base}/${p.replace(/^\//, "")}`;
+const { novios, fechaTexto } = invitacion;
+---
+
+<section
+  id="inicio"
+  class="hero relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden text-center px-6"
+>
+  <!-- Foto de fondo con efecto Ken Burns -->
+  <div class="hero-fondo" aria-hidden="true">
+    <img
+      src={asset(invitacion.fotoHero)}
+      alt=""
+      class="ken-burns h-full w-full object-cover"
+      fetchpriority="high"
+      decoding="async"
+    />
+  </div>
+  <div class="hero-velo" aria-hidden="true"></div>
+
+  <!-- Contenido -->
+  <div class="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center">
+    <p class="hero-kicker">Nos casamos</p>
+
+    <!-- Nombres manuscritos con trazo animado -->
+    <h1 class="sr-only">{novios.ella} & {novios.el}</h1>
+    <svg
+      class="nombres-svg"
+      viewBox="0 0 600 240"
+      role="img"
+      aria-hidden="true"
+    >
+      <text
+        class="trazo trazo-1"
+        x="300"
+        y="110"
+        text-anchor="middle"
+        font-family="'Pinyon Script', cursive"
+        font-size="120"
+      >{novios.ella}</text>
+      <text
+        class="amp"
+        x="300"
+        y="150"
+        text-anchor="middle"
+        font-family="'Cormorant Garamond', serif"
+        font-size="38"
+        font-style="italic"
+      >&</text>
+      <text
+        class="trazo trazo-2"
+        x="300"
+        y="220"
+        text-anchor="middle"
+        font-family="'Pinyon Script', cursive"
+        font-size="120"
+      >{novios.el}</text>
+    </svg>
+
+    <div class="filete hero-filete mt-2 mb-5">
+      <span class="rombo">✦</span>
+    </div>
+
+    <p class="hero-fecha">{fechaTexto}</p>
+    <p class="hero-lugar">{invitacion.recepcion.lugar} · {invitacion.recepcion.direccion}</p>
+  </div>
+
+  <!-- Indicador de scroll que respira -->
+  <a href="#cuenta" class="hero-scroll" aria-label="Bajar a la cuenta regresiva">
+    <span>Desliza</span>
+    <svg width="22" height="34" viewBox="0 0 22 34" fill="none">
+      <rect x="1" y="1" width="20" height="32" rx="10" stroke="currentColor" stroke-width="1.4"/>
+      <circle class="rueda" cx="11" cy="9" r="3" fill="currentColor"/>
+    </svg>
+  </a>
+
+  <!-- Monograma / sello que se ancla como marca de agua al hacer scroll -->
+  <div id="sello" class="sello" aria-hidden="true">{novios.iniciales}</div>
+</section>
+
+<style>
+  .hero-fondo {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .ken-burns {
+    animation: ken 22s ease-in-out infinite alternate;
+    transform-origin: 60% 40%;
+  }
+  @keyframes ken {
+    from { transform: scale(1.05); }
+    to { transform: scale(1.18) translate(-1.5%, -1%); }
+  }
+  /* Velo para que el texto siempre sea legible sobre la foto */
+  .hero-velo {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(to bottom, rgba(42,36,56,.28) 0%, rgba(42,36,56,.12) 35%, rgba(42,36,56,.45) 100%),
+      radial-gradient(120% 80% at 50% 55%, transparent 40%, rgba(42,36,56,.35) 100%);
+  }
+
+  .hero-kicker {
+    font-family: "Jost", sans-serif;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: #fbf7f2;
+    opacity: 0;
+    animation: aparece 0.9s ease 0.3s forwards;
+    margin-bottom: 0.4rem;
+    padding-left: 0.5em;
+  }
+
+  .nombres-svg {
+    width: min(92vw, 560px);
+    height: auto;
+    overflow: visible;
+    filter: drop-shadow(0 6px 20px rgba(42,36,56,0.45));
+  }
+  .trazo {
+    fill: #fbf7f2;
+    stroke: #fbf7f2;
+    stroke-width: 0.6;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    /* Aparece dibujándose y luego se rellena */
+    animation:
+      dibujar 2.6s cubic-bezier(0.6, 0, 0.2, 1) forwards,
+      rellenar 1s ease 2.1s forwards;
+    fill-opacity: 0;
+  }
+  .trazo-1 { animation-delay: 0.6s, 2.2s; }
+  .trazo-2 { animation-delay: 1.5s, 3.1s; }
+  .amp {
+    fill: #C9A96A;
+    opacity: 0;
+    animation: aparece 0.8s ease 2.6s forwards;
+  }
+  @keyframes dibujar {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes rellenar {
+    to { fill-opacity: 1; }
+  }
+
+  .hero-filete {
+    color: #C9A96A;
+    opacity: 0;
+    animation: aparece 0.9s ease 3.4s forwards;
+  }
+  .hero-filete .rombo { font-size: 0.7rem; }
+
+  .hero-fecha {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: clamp(1rem, 4vw, 1.4rem);
+    color: #fbf7f2;
+    opacity: 0;
+    animation: aparece 0.9s ease 3.7s forwards;
+  }
+  .hero-lugar {
+    font-family: "Jost", sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    font-size: 0.9rem;
+    color: rgba(251,247,242,0.85);
+    margin-top: 0.4rem;
+    opacity: 0;
+    animation: aparece 0.9s ease 4s forwards;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: max(1.4rem, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    color: #fbf7f2;
+    text-decoration: none;
+    opacity: 0;
+    animation: aparece 1s ease 4.4s forwards, respira 2.6s ease-in-out 4.4s infinite;
+  }
+  .hero-scroll span {
+    font-family: "Jost", sans-serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+  }
+  .rueda { animation: rodar 2s ease-in-out infinite; }
+  @keyframes rodar {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(7px); opacity: 0.4; }
+  }
+  @keyframes respira {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  @keyframes aparece {
+    to { opacity: 1; }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .trazo {
+      stroke-dashoffset: 0;
+      fill-opacity: 1;
+      animation: none;
+    }
+    .hero-kicker, .amp, .hero-filete, .hero-fecha, .hero-lugar, .hero-scroll {
+      opacity: 1;
+      animation: none;
+    }
+  }
+</style>

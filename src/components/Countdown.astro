@@ -1,0 +1,198 @@
+---
+import { invitacion } from "../config/invitacion";
+---
+
+<section
+  id="cuenta"
+  class="cuenta relative py-20 sm:py-28 px-6"
+  data-fecha={invitacion.fechaEvento}
+>
+  <div class="max-w-3xl mx-auto text-center reveal" data-stagger>
+    <p class="kicker">Cuenta regresiva</p>
+    <h2 class="font-display text-tinta text-4xl sm:text-5xl font-medium mt-3">
+      Falta cada vez menos
+    </h2>
+    <div class="filete my-6"><span>✦</span></div>
+
+    <div id="reloj" class="reloj" role="timer" aria-live="off">
+      <div class="unidad">
+        <span class="num" data-dias>--</span>
+        <span class="etq" data-etq-dias>Días</span>
+      </div>
+      <span class="dos-puntos">:</span>
+      <div class="unidad">
+        <span class="num" data-horas>--</span>
+        <span class="etq">Horas</span>
+      </div>
+      <span class="dos-puntos">:</span>
+      <div class="unidad">
+        <span class="num" data-min>--</span>
+        <span class="etq">Minutos</span>
+      </div>
+      <span class="dos-puntos">:</span>
+      <div class="unidad">
+        <span class="num" data-seg>--</span>
+        <span class="etq">Segundos</span>
+      </div>
+    </div>
+
+    <p id="gran-dia" class="gran-dia" hidden>¡Hoy es el gran día! 🤍</p>
+  </div>
+</section>
+
+<script>
+  import confetti from "canvas-confetti";
+
+  const seccion = document.getElementById("cuenta");
+  const objetivo = new Date(seccion.dataset.fecha).getTime();
+  const $ = (s) => document.querySelector(s);
+  const elDias = $("[data-dias]"),
+    elHoras = $("[data-horas]"),
+    elMin = $("[data-min]"),
+    elSeg = $("[data-seg]"),
+    etqDias = $("[data-etq-dias]"),
+    granDia = document.getElementById("gran-dia"),
+    reloj = document.getElementById("reloj");
+
+  const dos = (n) => String(n).padStart(2, "0");
+
+  function setNum(el, valor) {
+    const nuevo = String(valor);
+    if (el.textContent !== nuevo) {
+      el.textContent = nuevo;
+      // Micro-animación de slide al cambiar
+      el.classList.remove("flip");
+      void el.offsetWidth; // reflow
+      el.classList.add("flip");
+    }
+  }
+
+  let intervalo;
+  function tick() {
+    const restante = objetivo - Date.now();
+    if (restante <= 0) {
+      clearInterval(intervalo);
+      reloj.hidden = true;
+      granDia.hidden = false;
+      lanzarConfeti(true); // ráfaga grande el gran día
+      return;
+    }
+    const dias = Math.floor(restante / 86400000);
+    const horas = Math.floor((restante % 86400000) / 3600000);
+    const min = Math.floor((restante % 3600000) / 60000);
+    const seg = Math.floor((restante % 60000) / 1000);
+
+    setNum(elDias, dias);
+    setNum(elHoras, dos(horas));
+    setNum(elMin, dos(min));
+    setNum(elSeg, dos(seg));
+    etqDias.textContent = dias === 1 ? "Día" : "Días";
+  }
+  tick();
+  intervalo = setInterval(tick, 1000);
+
+  // ── Confeti al hacer scroll a esta sección (cada vez que reentra) ──
+  const paleta = ["#E8A87C", "#D99A9E", "#C9A96A", "#FBF7F2", "#6E2B3A"];
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function lanzarConfeti(grande = false) {
+    if (reduce) return;
+    const opts = {
+      colors: paleta,
+      disableForReducedMotion: true,
+      scalar: 1.05,
+      zIndex: 50,
+    };
+    if (grande) {
+      confetti({ ...opts, particleCount: 160, spread: 100, origin: { y: 0.6 } });
+      setTimeout(
+        () => confetti({ ...opts, particleCount: 120, spread: 120, startVelocity: 45, origin: { y: 0.65 } }),
+        250
+      );
+    } else {
+      // Ráfaga suave desde ambos lados
+      confetti({ ...opts, particleCount: 70, angle: 60, spread: 70, origin: { x: 0, y: 0.7 } });
+      confetti({ ...opts, particleCount: 70, angle: 120, spread: 70, origin: { x: 1, y: 0.7 } });
+    }
+  }
+
+  // Se dispara cada vez que la sección entra al viewport (no solo la 1ª vez).
+  if (!reduce && "IntersectionObserver" in window) {
+    let dentro = false;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting && !dentro) {
+            dentro = true;
+            lanzarConfeti(false);
+          } else if (!e.isIntersecting) {
+            dentro = false; // al salir, se rearma para la próxima
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    io.observe(document.getElementById("cuenta"));
+  }
+</script>
+
+<style>
+  .cuenta {
+    background:
+      radial-gradient(90% 60% at 50% 0%, rgba(232, 168, 124, 0.14), transparent 70%),
+      var(--marfil);
+  }
+  .reloj {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(0.35rem, 2.5vw, 1.4rem);
+    flex-wrap: nowrap;
+  }
+  .unidad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: clamp(3.6rem, 18vw, 6rem);
+  }
+  .num {
+    font-family: "Cormorant Garamond", serif;
+    font-weight: 500;
+    font-size: clamp(2.6rem, 13vw, 5rem);
+    line-height: 1;
+    color: var(--tinta);
+    font-variant-numeric: tabular-nums;
+    display: inline-block;
+  }
+  .num.flip {
+    animation: slidein 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slidein {
+    from { transform: translateY(-40%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .etq {
+    margin-top: 0.5rem;
+    font-family: "Jost", sans-serif;
+    font-size: clamp(0.6rem, 2.6vw, 0.78rem);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--vino);
+  }
+  .dos-puntos {
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(2rem, 9vw, 3.5rem);
+    color: var(--champagne);
+    line-height: 1.1;
+    padding-top: 0.1em;
+  }
+  .gran-dia {
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(2rem, 9vw, 3.6rem);
+    color: var(--vino);
+    font-weight: 500;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .num.flip { animation: none; }
+  }
+</style>

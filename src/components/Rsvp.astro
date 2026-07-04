@@ -1,0 +1,244 @@
+---
+import { invitacion } from "../config/invitacion";
+const { whatsapp, fechaLimiteTexto } = invitacion;
+---
+
+<section id="confirmar" class="rsvp py-20 sm:py-28 px-6">
+  <div class="max-w-lg mx-auto text-center reveal" data-stagger>
+    <p class="kicker">Confirma tu asistencia</p>
+    <h2 class="font-display text-tinta text-4xl sm:text-5xl font-medium mt-3">
+      Nos encantaría contar contigo
+    </h2>
+    <div class="filete my-6"><span>✦</span></div>
+    <p class="lim">
+      Agradecemos confirmar antes del
+      <strong>{fechaLimiteTexto}</strong>
+    </p>
+
+    <!-- Mini-formulario: arma el mensaje de WhatsApp -->
+    <form id="form-rsvp" class="form mt-8" novalidate>
+      <label class="campo">
+        <span>Tu nombre</span>
+        <input
+          type="text"
+          name="nombre"
+          autocomplete="name"
+          placeholder="Ej. Familia Pérez"
+          required
+        />
+      </label>
+
+      <label class="campo">
+        <span>¿Cuántas personas asistirán?</span>
+        <div class="pasos">
+          <button type="button" class="paso" data-menos aria-label="Menos personas">−</button>
+          <input
+            type="number"
+            name="personas"
+            value="1"
+            min="1"
+            max="20"
+            inputmode="numeric"
+            readonly
+          />
+          <button type="button" class="paso" data-mas aria-label="Más personas">+</button>
+        </div>
+      </label>
+
+      <div class="destino">
+        <span class="destino-etq">Enviar confirmación a:</span>
+        <div class="destino-ops">
+          {whatsapp.contactos.map((c, i) => (
+            <label class="chip">
+              <input type="radio" name="contacto" value={c.numero} checked={i === 0} />
+              <span>{c.nombre}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-whatsapp w-full mt-2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.14c-.24.68-1.42 1.32-1.95 1.36-.5.05-1.13.25-3.72-.78-3.13-1.24-5.12-4.42-5.28-4.63-.15-.2-1.26-1.68-1.26-3.2 0-1.53.8-2.28 1.08-2.59.28-.31.61-.38.82-.38.2 0 .41 0 .59.01.19.01.44-.07.69.53.24.6.83 2.06.9 2.21.07.15.12.32.02.52-.1.2-.15.32-.3.5-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.3.76 1.26 1.64 2.04 1.13 1.01 2.08 1.32 2.37 1.47.3.15.47.13.64-.08.17-.2.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.71.81 2 .96.3.15.5.22.57.34.07.12.07.71-.17 1.39Z"/>
+        </svg>
+        <span>Confirmar por WhatsApp</span>
+      </button>
+      <p class="nota">Se abrirá WhatsApp con tu mensaje ya escrito. 🤍</p>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { invitacion } from "../config/invitacion";
+
+  const form = document.getElementById("form-rsvp") as HTMLFormElement;
+  const inputPersonas = form.querySelector<HTMLInputElement>('input[name="personas"]')!;
+  const inputNombre = form.querySelector<HTMLInputElement>('input[name="nombre"]')!;
+  const btnMenos = form.querySelector("[data-menos]")!;
+  const btnMas = form.querySelector("[data-mas]")!;
+
+  const clamp = (n: number) => Math.max(1, Math.min(20, n));
+  btnMenos.addEventListener("click", () => {
+    inputPersonas.value = String(clamp(Number(inputPersonas.value) - 1));
+  });
+  btnMas.addEventListener("click", () => {
+    inputPersonas.value = String(clamp(Number(inputPersonas.value) + 1));
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const nombre = inputNombre.value.trim();
+    if (!nombre) {
+      inputNombre.focus();
+      inputNombre.classList.add("error");
+      setTimeout(() => inputNombre.classList.remove("error"), 1500);
+      return;
+    }
+    const cantidad = clamp(Number(inputPersonas.value));
+    const personasTxt = cantidad === 1 ? "1 persona" : `${cantidad} personas`;
+    const numero =
+      form.querySelector<HTMLInputElement>('input[name="contacto"]:checked')?.value ||
+      invitacion.whatsapp.contactos[0].numero;
+
+    const mensaje = invitacion.whatsapp.mensajeBase
+      .replace("{nombre}", nombre)
+      .replace("{personas}", personasTxt);
+
+    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, "_blank", "noopener");
+  });
+</script>
+
+<style>
+  .rsvp {
+    background:
+      radial-gradient(70% 50% at 50% 0%, rgba(201, 169, 106, 0.12), transparent 70%),
+      var(--marfil);
+  }
+  .lim {
+    font-family: "Jost", sans-serif;
+    color: var(--tinta);
+    opacity: 0.8;
+    font-size: 0.95rem;
+  }
+  .lim strong { color: var(--vino); font-weight: 500; }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    text-align: left;
+    background: var(--marfil);
+    border: var(--borde-fino);
+    border-radius: 22px;
+    padding: 1.8rem 1.5rem;
+    box-shadow: var(--sombra-suave);
+  }
+  .campo { display: flex; flex-direction: column; gap: 0.5rem; }
+  .campo > span {
+    font-family: "Jost", sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--vino);
+  }
+  .campo input[type="text"] {
+    font-family: "Jost", sans-serif;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(42, 36, 56, 0.15);
+    background: var(--marfil-hondo);
+    color: var(--tinta);
+    min-height: 48px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .campo input[type="text"]:focus {
+    outline: none;
+    border-color: var(--champagne);
+    box-shadow: 0 0 0 3px rgba(201, 169, 106, 0.2);
+  }
+  .campo input.error {
+    border-color: var(--vino);
+    animation: temblor 0.4s;
+  }
+  @keyframes temblor {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  .pasos {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .paso {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 1px solid var(--champagne);
+    background: var(--marfil);
+    color: var(--vino);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .paso:hover { background: var(--champagne); color: #fff; }
+  .paso:active { transform: scale(0.92); }
+  .pasos input[type="number"] {
+    width: 4rem;
+    text-align: center;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: var(--tinta);
+    border: none;
+    background: transparent;
+    -moz-appearance: textfield;
+  }
+  .pasos input::-webkit-outer-spin-button,
+  .pasos input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .destino { display: flex; flex-direction: column; gap: 0.6rem; }
+  .destino-etq {
+    font-family: "Jost", sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--vino);
+  }
+  .destino-ops { display: flex; gap: 0.6rem; }
+  .chip {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid rgba(42, 36, 56, 0.15);
+    background: var(--marfil-hondo);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Jost", sans-serif;
+  }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip:has(input:checked) {
+    border-color: var(--champagne);
+    background: var(--champagne);
+    color: #fff;
+    box-shadow: var(--sombra-suave);
+  }
+
+  .nota {
+    text-align: center;
+    font-family: "Jost", sans-serif;
+    font-size: 0.8rem;
+    color: var(--tinta);
+    opacity: 0.6;
+  }
+</style>

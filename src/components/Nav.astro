@@ -1,0 +1,125 @@
+---
+const enlaces = [
+  { href: "#cuenta", texto: "Cuenta regresiva" },
+  { href: "#galeria", texto: "Galería" },
+  { href: "#evento", texto: "Recepción" },
+  { href: "#ubicacion", texto: "Ubicación" },
+  { href: "#vestimenta", texto: "Vestimenta" },
+  { href: "#confirmar", texto: "Confirmar" },
+];
+---
+
+<button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-menu">
+  <span></span><span></span><span></span>
+</button>
+
+<nav id="nav-menu" class="nav-menu" aria-hidden="true">
+  <ul>
+    {enlaces.map((e) => (
+      <li><a href={e.href}>{e.texto}</a></li>
+    ))}
+  </ul>
+</nav>
+<div id="nav-fondo" class="nav-fondo" hidden></div>
+
+<script>
+  const toggle = document.getElementById("nav-toggle")!;
+  const menu = document.getElementById("nav-menu")!;
+  const fondo = document.getElementById("nav-fondo")!;
+
+  function abrir(estado: boolean) {
+    toggle.classList.toggle("activo", estado);
+    menu.classList.toggle("abierto", estado);
+    toggle.setAttribute("aria-expanded", String(estado));
+    menu.setAttribute("aria-hidden", String(!estado));
+    fondo.hidden = !estado;
+    document.body.style.overflow = estado ? "hidden" : "";
+  }
+
+  toggle.addEventListener("click", () => abrir(!menu.classList.contains("abierto")));
+  fondo.addEventListener("click", () => abrir(false));
+  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => abrir(false)));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && menu.classList.contains("abierto")) abrir(false);
+  });
+</script>
+
+<style>
+  .nav-toggle {
+    position: fixed;
+    top: max(0.9rem, env(safe-area-inset-top));
+    left: max(0.9rem, env(safe-area-inset-left));
+    z-index: 70;
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    background: rgba(42, 36, 56, 0.72);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(201, 169, 106, 0.6);
+    display: grid;
+    place-content: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: var(--sombra-suave);
+    transition: background 0.3s ease;
+  }
+  .nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--marfil);
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+  }
+  .nav-toggle.activo { background: var(--vino); }
+  .nav-toggle.activo span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle.activo span:nth-child(2) { opacity: 0; }
+  .nav-toggle.activo span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .nav-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    background: rgba(42, 36, 56, 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: min(78vw, 320px);
+    z-index: 68;
+    background: var(--marfil);
+    box-shadow: var(--sombra-carta);
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+    border-right: 3px solid var(--champagne);
+  }
+  .nav-menu.abierto { transform: translateX(0); }
+  .nav-menu ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  .nav-menu a {
+    display: block;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.6rem;
+    color: var(--tinta);
+    text-decoration: none;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(201, 169, 106, 0.25);
+    transition: color 0.2s ease, padding-left 0.2s ease;
+  }
+  .nav-menu a:hover {
+    color: var(--vino);
+    padding-left: 0.5rem;
+  }
+</style>

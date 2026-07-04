@@ -1,0 +1,19 @@
+# Dependencias
+node_modules/
+
+# Salida de build
+dist/
+.astro/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Entorno / logs
+.env
+.env.*
+*.log
+npm-debug.log*
+
+# Config local de Claude Code
+.claude/

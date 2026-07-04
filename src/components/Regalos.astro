@@ -1,0 +1,50 @@
+---
+import { invitacion } from "../config/invitacion";
+const { regalos } = invitacion;
+---
+
+<section id="regalos" class="regalos py-20 sm:py-28 px-6">
+  <div class="max-w-xl mx-auto text-center reveal" data-stagger>
+    <div class="sobre" aria-hidden="true">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2.5" y="5" width="19" height="14" rx="2.5"/>
+        <path d="M3 6.5l9 6 9-6"/>
+        <path d="M12 12.5v4" opacity="0"/>
+      </svg>
+    </div>
+    <p class="kicker mt-4">{regalos.titulo}</p>
+    <h2 class="font-display text-tinta text-4xl sm:text-5xl font-medium mt-3">
+      Tu presencia es nuestro mejor regalo
+    </h2>
+    <div class="filete my-6"><span>✦</span></div>
+    <p class="mensaje">{regalos.mensaje}</p>
+  </div>
+</section>
+
+<style>
+  .regalos {
+    background:
+      radial-gradient(80% 60% at 50% 100%, rgba(217, 154, 158, 0.14), transparent 70%),
+      var(--marfil-hondo);
+  }
+  .sobre {
+    display: inline-grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    border-radius: 999px;
+    background: var(--marfil);
+    color: var(--vino);
+    box-shadow: var(--sombra-suave);
+    border: var(--borde-fino);
+  }
+  .mensaje {
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(1.2rem, 5vw, 1.55rem);
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--tinta);
+    max-width: 32rem;
+    margin-inline: auto;
+  }
+</style>

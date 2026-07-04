@@ -1,0 +1,212 @@
+---
+import { invitacion } from "../config/invitacion";
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const asset = (p: string) => `${base}/${p.replace(/^\//, "")}`;
+const { fotos } = invitacion;
+---
+
+<section id="galeria" class="galeria py-20 sm:py-28 overflow-hidden">
+  <div class="max-w-3xl mx-auto text-center px-6 reveal" data-stagger>
+    <p class="kicker">Nuestros momentos</p>
+    <h2 class="font-display text-tinta text-4xl sm:text-5xl font-medium mt-3">
+      Un instante, mil recuerdos
+    </h2>
+    <div class="filete my-6"><span>✦</span></div>
+    <p class="pista-txt">Desliza las fotos como un álbum</p>
+  </div>
+
+  <div class="reveal album-wrap mt-6">
+    <div class="swiper album">
+      <div class="swiper-wrapper">
+        {
+          fotos.map((f, i) => (
+            <div class="swiper-slide">
+              <figure class="polaroid" style={`--giro:${(i % 2 ? 1 : -1) * (1.4 + (i % 3) * 0.6)}deg`}>
+                <div class="foto">
+                  <img
+                    src={asset(f.src)}
+                    alt={f.alt}
+                    loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    draggable="false"
+                  />
+                  <span class="brillo" aria-hidden="true"></span>
+                </div>
+                <figcaption class="font-script pie">{f.pie}</figcaption>
+              </figure>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="album-barra">
+      <button class="album-flecha prev" aria-label="Foto anterior">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="album-contador"><b data-actual>1</b> / {fotos.length}</span>
+      <button class="album-flecha next" aria-label="Foto siguiente">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import Swiper from "swiper";
+  import { EffectCards, Keyboard, Autoplay } from "swiper/modules";
+  import "swiper/css";
+  import "swiper/css/effect-cards";
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const actual = document.querySelector<HTMLElement>("[data-actual]");
+
+  const swiper = new Swiper(".album", {
+    modules: [EffectCards, Keyboard, Autoplay],
+    effect: "cards",
+    grabCursor: true,
+    keyboard: { enabled: true },
+    cardsEffect: {
+      perSlideOffset: 9, // separación de la baraja
+      perSlideRotate: 4, // rotación de las cartas apiladas
+      rotate: true,
+      slideShadows: true,
+    },
+    loop: true,
+    autoplay: reduce
+      ? false
+      : { delay: 4200, disableOnInteraction: true, pauseOnMouseEnter: true },
+    on: {
+      slideChange(s) {
+        if (actual) actual.textContent = String(s.realIndex + 1);
+      },
+    },
+  });
+
+  document.querySelector(".album-barra .prev")?.addEventListener("click", () => swiper.slidePrev());
+  document.querySelector(".album-barra .next")?.addEventListener("click", () => swiper.slideNext());
+</script>
+
+<style>
+  .galeria {
+    background:
+      radial-gradient(120% 70% at 50% 0%, rgba(232, 168, 124, 0.1), transparent 65%),
+      var(--marfil);
+  }
+  .pista-txt {
+    font-family: "Jost", sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--polvo);
+    margin-top: -0.4rem;
+  }
+
+  .album-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0 0;
+  }
+
+  /* La pila de cartas */
+  .album {
+    width: min(80vw, 340px);
+    height: min(107vw, 454px); /* proporción ~3:4 + espacio del pie */
+    overflow: visible;
+  }
+  .album .swiper-slide {
+    border-radius: 14px;
+    overflow: visible;
+    display: flex;
+  }
+
+  /* Marco tipo Polaroid */
+  .polaroid {
+    width: 100%;
+    background: #fffdf9;
+    border-radius: 12px;
+    padding: 12px 12px 0;
+    box-shadow:
+      0 1px 0 rgba(42, 36, 56, 0.04),
+      var(--sombra-carta);
+    display: flex;
+    flex-direction: column;
+    transform: rotate(var(--giro, 0deg));
+  }
+  .foto {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--marfil-hondo);
+  }
+  .foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Destello diagonal que recorre la foto (sensación de papel satinado) */
+  .brillo {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.28) 48%,
+      transparent 60%
+    );
+    transform: translateX(-120%);
+  }
+  .swiper-slide-active .brillo {
+    animation: pasar-brillo 2.6s ease 0.4s;
+  }
+  @keyframes pasar-brillo {
+    to { transform: translateX(120%); }
+  }
+
+  .pie {
+    text-align: center;
+    color: var(--tinta);
+    font-size: 1.6rem;
+    line-height: 1;
+    padding: 0.55rem 0 0.7rem;
+  }
+
+  /* Barra de control */
+  .album-barra {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    margin-top: 2.2rem;
+  }
+  .album-flecha {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    background: var(--marfil);
+    border: 1px solid var(--champagne);
+    color: var(--vino);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: var(--sombra-suave);
+    transition: background 0.2s ease, transform 0.15s ease, color 0.2s ease;
+  }
+  .album-flecha:hover { background: var(--champagne); color: #fff; }
+  .album-flecha:active { transform: scale(0.92); }
+  .album-contador {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.14em;
+    color: var(--tinta);
+    min-width: 3.4rem;
+    text-align: center;
+  }
+  .album-contador b { color: var(--vino); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .brillo { display: none; }
+  }
+</style>
