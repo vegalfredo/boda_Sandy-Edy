@@ -6,12 +6,12 @@ const { musica } = invitacion;
 ---
 
 <div class="musica-wrap">
-  <div id="tooltip-musica" class="tooltip">Toca aquí para silenciar la música 🔇</div>
+  <div id="tooltip-musica" class="tooltip">Toca para escuchar nuestra canción</div>
   <button
     id="btn-musica"
-    class="btn-musica sonando"
-    aria-label="Silenciar música"
-    aria-pressed="true"
+    class="btn-musica"
+    aria-label="Reproducir música"
+    aria-pressed="false"
   >
     <!-- Icono nota (pausado) -->
     <svg class="ic-nota" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -24,7 +24,7 @@ const { musica } = invitacion;
       <span></span><span></span><span></span><span></span>
     </span>
   </button>
-  <audio id="audio-boda" src={asset(musica.archivo)} preload="auto" loop></audio>
+  <audio id="audio-boda" src={asset(musica.archivo)} preload="none" loop></audio>
 </div>
 
 <script>
@@ -34,11 +34,20 @@ const { musica } = invitacion;
   const VOL_MAX = 0.55;
   let fadeTimer: number | undefined;
 
-  // El usuario silenció manualmente: no volver a arrancar por gesto.
-  let silenciadoPorUsuario = false;
-
+  // Mostrar el tooltip una vez, luego ocultarlo
+  let tooltipVisto = false;
+  try {
+    tooltipVisto = localStorage.getItem("musica-tooltip") === "1";
+  } catch {}
+  if (!tooltipVisto) {
+    setTimeout(() => tooltip.classList.add("visible"), 1600);
+    setTimeout(() => ocultarTooltip(), 7000);
+  }
   function ocultarTooltip() {
     tooltip.classList.remove("visible");
+    try {
+      localStorage.setItem("musica-tooltip", "1");
+    } catch {}
   }
 
   function fade(desde: number, hasta: number, cb?: () => void) {
@@ -56,97 +65,29 @@ const { musica } = invitacion;
     }, 40);
   }
 
-  function marcarSonando() {
-    btn.classList.add("sonando");
-    btn.setAttribute("aria-pressed", "true");
-    btn.setAttribute("aria-label", "Silenciar música");
-  }
-  function marcarSilencio() {
-    btn.classList.remove("sonando");
-    btn.setAttribute("aria-pressed", "false");
-    btn.setAttribute("aria-label", "Reproducir música");
-  }
-
   async function reproducir() {
     try {
       audio.volume = 0;
       await audio.play();
       fade(0, VOL_MAX);
-      marcarSonando();
-      return true;
+      btn.classList.add("sonando");
+      btn.setAttribute("aria-pressed", "true");
+      btn.setAttribute("aria-label", "Pausar música");
     } catch {
-      // El navegador bloqueó la reproducción automática.
-      return false;
+      /* el navegador bloqueó la reproducción; no pasa nada */
     }
   }
   function pausar() {
     fade(audio.volume, 0, () => audio.pause());
-    marcarSilencio();
+    btn.classList.remove("sonando");
+    btn.setAttribute("aria-pressed", "false");
+    btn.setAttribute("aria-label", "Reproducir música");
   }
 
-  // ── Arranque automático de la canción ──────────────────────────────
-  // 1) Intentamos reproducir de inmediato al cargar.
-  // 2) Si el navegador lo bloquea (celulares, WhatsApp), lo dejamos listo
-  //    para que arranque solo en el PRIMER gesto del usuario (toque, scroll
-  //    o tecla), lo cual ocurre en el primer segundo de la visita.
-  // Eventos que SÍ cuentan como "gesto de activación" en todos los navegadores.
-  // En iOS Safari solo valen los de soltar/clic (touchend/click/pointerup/keydown);
-  // 'touchstart' y 'scroll' van como respaldo por si el navegador los acepta.
-  const eventosGesto = [
-    "click",
-    "touchend",
-    "pointerup",
-    "keydown",
-    "touchstart",
-    "scroll",
-  ] as const;
-
-  function quitarEnganches() {
-    eventosGesto.forEach((ev) =>
-      window.removeEventListener(ev, alPrimerGesto, true)
-    );
-  }
-  async function alPrimerGesto(e: Event) {
-    // Si el gesto es sobre el propio botón, que lo maneje su onclick.
-    if (e.target instanceof Node && btn.contains(e.target)) {
-      quitarEnganches();
-      return;
-    }
-    if (silenciadoPorUsuario || !audio.paused) {
-      quitarEnganches();
-      return;
-    }
-    const ok = await reproducir();
-    if (ok) quitarEnganches();
-  }
-
-  function engancharGestos() {
-    eventosGesto.forEach((ev) =>
-      // capture:true para atraparlo antes que nada; sin passive para que
-      // audio.play() cuente como iniciado por el usuario.
-      window.addEventListener(ev, alPrimerGesto, { capture: true })
-    );
-  }
-
-  (async () => {
-    const ok = await reproducir();
-    // Aunque el autoplay funcione, dejamos los gestos enganchados: si el
-    // navegador lo bloqueó silenciosamente, el primer toque lo arrancará.
-    if (!ok) engancharGestos();
-    setTimeout(() => tooltip.classList.add("visible"), 1800);
-    setTimeout(ocultarTooltip, 8000);
-  })();
-
-  // ── Botón: alterna entre sonar y silenciar ─────────────────────────
   btn.addEventListener("click", () => {
     ocultarTooltip();
-    if (audio.paused) {
-      silenciadoPorUsuario = false;
-      reproducir();
-    } else {
-      silenciadoPorUsuario = true;
-      pausar();
-    }
+    if (audio.paused) reproducir();
+    else pausar();
   });
 </script>
 
