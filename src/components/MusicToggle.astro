@@ -6,12 +6,12 @@ const { musica } = invitacion;
 ---
 
 <div class="musica-wrap">
-  <div id="tooltip-musica" class="tooltip">Toca para escuchar nuestra canción</div>
+  <div id="tooltip-musica" class="tooltip">Toca aquí para silenciar la música 🔇</div>
   <button
     id="btn-musica"
-    class="btn-musica"
-    aria-label="Reproducir música"
-    aria-pressed="false"
+    class="btn-musica sonando"
+    aria-label="Silenciar música"
+    aria-pressed="true"
   >
     <!-- Icono nota (pausado) -->
     <svg class="ic-nota" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -24,7 +24,7 @@ const { musica } = invitacion;
       <span></span><span></span><span></span><span></span>
     </span>
   </button>
-  <audio id="audio-boda" src={asset(musica.archivo)} preload="none" loop></audio>
+  <audio id="audio-boda" src={asset(musica.archivo)} preload="auto" loop></audio>
 </div>
 
 <script>
@@ -34,20 +34,11 @@ const { musica } = invitacion;
   const VOL_MAX = 0.55;
   let fadeTimer: number | undefined;
 
-  // Mostrar el tooltip una vez, luego ocultarlo
-  let tooltipVisto = false;
-  try {
-    tooltipVisto = localStorage.getItem("musica-tooltip") === "1";
-  } catch {}
-  if (!tooltipVisto) {
-    setTimeout(() => tooltip.classList.add("visible"), 1600);
-    setTimeout(() => ocultarTooltip(), 7000);
-  }
+  // El usuario silenció manualmente: no volver a arrancar por gesto.
+  let silenciadoPorUsuario = false;
+
   function ocultarTooltip() {
     tooltip.classList.remove("visible");
-    try {
-      localStorage.setItem("musica-tooltip", "1");
-    } catch {}
   }
 
   function fade(desde: number, hasta: number, cb?: () => void) {
@@ -65,29 +56,83 @@ const { musica } = invitacion;
     }, 40);
   }
 
-  async function reproducir() {
-    try {
-      audio.volume = 0;
-      await audio.play();
-      fade(0, VOL_MAX);
-      btn.classList.add("sonando");
-      btn.setAttribute("aria-pressed", "true");
-      btn.setAttribute("aria-label", "Pausar música");
-    } catch {
-      /* el navegador bloqueó la reproducción; no pasa nada */
-    }
+  function marcarSonando() {
+    btn.classList.add("sonando");
+    btn.setAttribute("aria-pressed", "true");
+    btn.setAttribute("aria-label", "Silenciar música");
   }
-  function pausar() {
-    fade(audio.volume, 0, () => audio.pause());
+  function marcarSilencio() {
     btn.classList.remove("sonando");
     btn.setAttribute("aria-pressed", "false");
     btn.setAttribute("aria-label", "Reproducir música");
   }
 
+  async function reproducir() {
+    try {
+      audio.volume = 0;
+      await audio.play();
+      fade(0, VOL_MAX);
+      marcarSonando();
+      return true;
+    } catch {
+      // El navegador bloqueó la reproducción automática.
+      return false;
+    }
+  }
+  function pausar() {
+    fade(audio.volume, 0, () => audio.pause());
+    marcarSilencio();
+  }
+
+  // ── Arranque automático de la canción ──────────────────────────────
+  // 1) Intentamos reproducir de inmediato al cargar.
+  // 2) Si el navegador lo bloquea (celulares, WhatsApp), lo dejamos listo
+  //    para que arranque solo en el PRIMER gesto del usuario (toque, scroll
+  //    o tecla), lo cual ocurre en el primer segundo de la visita.
+  const eventosGesto = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
+
+  function quitarEnganches() {
+    eventosGesto.forEach((ev) =>
+      window.removeEventListener(ev, alPrimerGesto, { capture: true } as any)
+    );
+  }
+  async function alPrimerGesto() {
+    if (silenciadoPorUsuario || !audio.paused) {
+      quitarEnganches();
+      return;
+    }
+    const ok = await reproducir();
+    if (ok) quitarEnganches();
+  }
+
+  (async () => {
+    const ok = await reproducir();
+    if (!ok) {
+      // Enganchamos el primer gesto para arrancar. { once:false } por si el
+      // primer gesto es un 'scroll' que no cuenta como interacción válida.
+      eventosGesto.forEach((ev) =>
+        window.addEventListener(ev, alPrimerGesto, { capture: true, passive: true })
+      );
+      // Pista visual para que sepan que pueden silenciar.
+      setTimeout(() => tooltip.classList.add("visible"), 1800);
+      setTimeout(ocultarTooltip, 8000);
+    } else {
+      // Autoplay permitido: mostramos el tooltip de "silenciar".
+      setTimeout(() => tooltip.classList.add("visible"), 1800);
+      setTimeout(ocultarTooltip, 8000);
+    }
+  })();
+
+  // ── Botón: alterna entre sonar y silenciar ─────────────────────────
   btn.addEventListener("click", () => {
     ocultarTooltip();
-    if (audio.paused) reproducir();
-    else pausar();
+    if (audio.paused) {
+      silenciadoPorUsuario = false;
+      reproducir();
+    } else {
+      silenciadoPorUsuario = true;
+      pausar();
+    }
   });
 </script>
 
