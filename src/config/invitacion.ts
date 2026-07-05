@@ -15,10 +15,10 @@ export const invitacion = {
   // ── Fecha y hora del evento (ISO con zona horaria de México) ─────
   // Querétaro = UTC−06:00 (Tiempo del Centro de México).
   // Formato: AAAA-MM-DDThh:mm:ss-06:00
-  fechaEvento: "2026-08-15T18:00:00-06:00",
+  fechaEvento: "2026-08-15T16:00:00-06:00",
   // Textos legibles (por si quieres controlarlos a mano):
   fechaTexto: "Sábado 15 de Agosto de 2026",
-  horaTexto: "6:00 pm",
+  horaTexto: "4:00 pm",
 
   // ── Padres ──────────────────────────────────────────────────────
   padres: {
@@ -30,7 +30,7 @@ export const invitacion = {
   recepcion: {
     lugar: "Quinta Santiago",
     direccion: "Humilpan, Querétaro",
-    hora: "6:00 pm",
+    hora: "4:00 pm",
     // Link corto de Google Maps que compartió la pareja:
     mapsUrl: "https://maps.app.goo.gl/CgNbt3y4ugNrvKoJ6",
     // Consulta para el iframe y el botón "Cómo llegar":
@@ -44,8 +44,9 @@ export const invitacion = {
       "Queremos verte elegante y cómodo para celebrar toda la noche. Ellas: vestido de cóctel o largo. Ellos: traje.",
     // Colores reservados para la novia (por favor evitar):
     coloresEvitar: ["Blanco", "Beige / Hueso"],
-    // Paleta sugerida para inspirar a los invitados (hex):
-    paletaSugerida: ["#6E2B3A", "#2A2438", "#A8B5C4", "#C9A96A", "#3E5641"],
+    // Paleta sugerida para inspirar a los invitados (hex).
+    // Vacío = no se muestra la sección de paleta. (Cliente pidió quitarla.)
+    paletaSugerida: [] as string[],
   },
 
   // ── Mesa de regalos ─────────────────────────────────────────────

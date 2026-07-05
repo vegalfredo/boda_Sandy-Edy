@@ -27,12 +27,16 @@ const { vestimenta } = invitacion;
 
     <div class="filete my-8"><span>✦</span></div>
 
-    <p class="sub-etq">Paleta sugerida</p>
-    <div class="paleta mt-4">
-      {vestimenta.paletaSugerida.map((c) => (
-        <span class="circulo" style={`background:${c}`} title={c}></span>
-      ))}
-    </div>
+    {vestimenta.paletaSugerida.length > 0 && (
+      <>
+        <p class="sub-etq">Paleta sugerida</p>
+        <div class="paleta mt-4 mb-2">
+          {vestimenta.paletaSugerida.map((c) => (
+            <span class="circulo" style={`background:${c}`} title={c}></span>
+          ))}
+        </div>
+      </>
+    )}
 
     {vestimenta.coloresEvitar.length > 0 && (
       <div class="evitar mt-8">
