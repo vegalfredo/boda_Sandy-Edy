@@ -9,7 +9,7 @@
 > Esta sección refleja lo implementado. Las secciones 1–9 son la especificación
 > de diseño original y siguen siendo la referencia de estilo.
 
-- **Novios:** Sandy & Edy — **sábado 15 de agosto de 2026, 18:00**, Quinta Santiago, Humilpan, Querétaro.
+- **Novios:** Sandy & Edy — **sábado 15 de agosto de 2026, 16:00 (4:00 pm)**, Quinta Santiago, Humilpan, Querétaro. (La hora cambió de 18:00 a 16:00 por petición del cliente el 2026-07-05.)
 - **Stack elegido:** **Astro + Tailwind** (estático). Dependencias: `astro`, `@astrojs/tailwind`, `tailwindcss`, `canvas-confetti`, `swiper`. Nada más — al añadir features, **no instalar tecnologías nuevas** sin pedirlo.
 - **Repositorio:** `github.com/vegalfredo/boda_Sandy-Edy` (rama `main`). Deploy automático con `.github/workflows/deploy.yml`.
 - **PUBLICADO Y EN LÍNEA** ✅ (desde 2026-07-04): `https://vegalfredo.github.io/boda_Sandy-Edy/` responde HTTP 200. Pages ya está activado con **Source = GitHub Actions** (Settings → Pages). Cada `git push` a `main` republica solo. En `astro.config.mjs`: `base: "/boda_Sandy-Edy"`, `site: "https://vegalfredo.github.io"`. Si cambia el nombre del repo, actualizar `NOMBRE_REPO` ahí.
@@ -22,6 +22,8 @@
   - **Miniatura de WhatsApp (OG)** = la foto de la pareja (no un ramo). Es lo más personal. Solo carga una vez el sitio está publicado; WhatsApp cachea la vista previa.
   - **Glow en el Hero:** "Sandy & Edy" (SVG) y "Nos casamos" llevan resplandor multicapa (blanco cálido + halo dorado) que respira, estilo efecto Glow de After Effects. El glow del SVG va en el contenedor `.nombres-svg` (no en `.trazo`) para no romper la animación de trazo/relleno. Respeta `prefers-reduced-motion` (brillo sí, latido no).
   - **Mensajes de invitados ocultos hasta la boda:** se puede (buzón externo tipo Formspree/Google Forms), pero el usuario decidió **NO** implementarlo — el sitio se queda 100% estático sin formularios de recados.
+  - **Música = opt-in (el usuario pulsa el botón para escuchar).** Se probó invertirlo a autoplay/arranque-por-gesto pero NO funcionó de forma fiable en el navegador del cliente, así que se **revirtió a opt-in**. No volver a intentar autoplay sin una razón sólida.
+  - **Paleta de colores sugerida en Vestimenta: QUITADA** (petición del cliente, 2026-07-05). Antes existía un bloque "Paleta sugerida" con círculos de color (`vestimenta.paletaSugerida`). Se ocultó dejando ese array **vacío** — el componente `Vestimenta.astro` ya condiciona el bloque a `paletaSugerida.length > 0`, así que basta con volver a poner colores en el config para reactivarlo. El aviso de "evita Blanco / Beige-Hueso" (`coloresEvitar`) **sí se conserva**.
 - **Verificación visual:** con `playwright-core` + Chrome local headless. El script `.mjs` debe correr **desde la raíz del proyecto** (para resolver `node_modules`) y la ruta de Chrome lleva backslashes dobles.
 
 ---
